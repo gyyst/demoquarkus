@@ -5,6 +5,8 @@ on:
   push:
     tags:
       - 'v*.*.*' # Trigger on version tags like v1.0.0
+permissions:
+  contents: write
 jobs:
   build-native:
     runs-on: ubuntu-latest
