@@ -36,6 +36,9 @@ jobs:
       - name: Build with Maven (compile)
         run: ./mvnw clean compile
 
+      - name: ldd version
+        run: ldd --version
+
       - name: Build native image
         run: ./mvnw package -Pnative -DskipTests -Dquarkus.native.container-build=true
 
