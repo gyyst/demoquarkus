@@ -28,7 +28,10 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
-        
+
+    - name: chmod
+      run: chmod +x ./mvnw    
+
     - name: Build with Maven
       run: ./mvnw clean compile
       
@@ -68,6 +71,9 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
         
+    - name: chmod
+      run: chmod +x ./mvnw   
+
     - name: Build native image in container
       run: ./mvnw package -Pnative -DskipTests -Dquarkus.native.container-build=true
       
