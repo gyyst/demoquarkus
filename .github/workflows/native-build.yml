@@ -66,7 +66,7 @@ jobs:
         run: |
           IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.REPO_NAME }}
           # Build the Docker image
-          docker build -f src/main/docker/Dockerfile.native -t $IMAGE_NAME:${{ github.ref_name }} -t $IMAGE_NAME:latest .
+          docker build -f src/main/docker/Dockerfile.native-micro -t $IMAGE_NAME:${{ github.ref_name }} -t $IMAGE_NAME:latest .
           # Push the Docker image with tag
           docker push $IMAGE_NAME:${{ github.ref_name }}
           # Push the Docker image with latest tag
