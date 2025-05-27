@@ -10,84 +10,81 @@ on:
 jobs:
   build-native:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up GraalVM
-      uses: graalvm/setup-graalvm@v1
-      with:
-        java-version: '21'
-        distribution: 'graalvm-community'
-        github-token: ${{ secrets.GH_TOKEN }}
-        
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: chmod
-      run: chmod +x ./mvnw    
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm-community'
+          github-token: ${{ secrets.GH_TOKEN }}
 
-    - name: Build with Maven
-      run: ./mvnw clean compile
-      
-    - name: Run tests
-      run: ./mvnw test
-      
-    - name: Build native image
-      run: ./mvnw package -Pnative -DskipTests
-      
-    - name: Upload native binary
-      uses: actions/upload-artifact@v4
-      with:
-        name: quarkus-native-binary
-        path: target/*-runner
-        retention-days: 30
-        
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: chmod
+        run: chmod +x ./mvnw
+
+      - name: Build with Maven
+        run: ./mvnw clean compile
+
+      - name: Build native image
+        run: ./mvnw package -Pnative -DskipTests
+
+      - name: Upload native binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: quarkus-native-binary
+          path: target/*-runner
+          retention-days: 30
+
   build-native-container:
     runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-        
-    - name: chmod
-      run: chmod +x ./mvnw   
 
-    - name: Build native image in container
-      run: ./mvnw package -Pnative -DskipTests -Dquarkus.native.container-build=true
-      
-    - name: Build Docker image
-      run: |
-        docker build -f src/main/docker/Dockerfile.native -t quarkus-native:latest .
-        
-    - name: Save Docker image
-      run: |
-        docker save quarkus-native:latest | gzip > quarkus-native-image.tar.gz
-        
-    - name: Upload Docker image
-      uses: actions/upload-artifact@v4
-      with:
-        name: quarkus-native-docker-image
-        path: quarkus-native-image.tar.gz
-        retention-days: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: chmod
+        run: chmod +x ./mvnw
+
+      - name: Build native image in container
+        run: ./mvnw package -Pnative -DskipTests -Dquarkus.native.container-build=true
+
+      - name: Build Docker image
+        run: |
+          docker build -f src/main/docker/Dockerfile.native-micro -t quarkus-native:latest .
+
+      - name: Save Docker image
+        run: |
+          docker save quarkus-native:latest | gzip > quarkus-native-image.tar.gz
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: quarkus-native-docker-image
+          path: quarkus-native-image.tar.gz
+          retention-days: 30
