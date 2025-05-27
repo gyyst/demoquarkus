@@ -129,6 +129,7 @@
                 <quarkus.package.type>native</quarkus.package.type>
                 <quarkus.native.enabled>true</quarkus.native.enabled>
                 <quarkus.native.container-build>true</quarkus.native.container-build>
+                <quarkus.native.remote-container-build>true</quarkus.native.remote-container-build>
             </properties>
         </profile>
     </profiles>
