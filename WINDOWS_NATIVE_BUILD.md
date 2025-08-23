@@ -88,6 +88,18 @@ graph TB
      - 在批处理脚本中使用 `set` 命令
      - 添加路径到 `PATH` 环境变量
 
+1.1. **环境变量为空的问题**
+   ```
+   "JAVA_HOME="
+   "GRAALVM_HOME="
+   ```
+   - **原因**: 批处理脚本中的 `set` 命令语法问题
+   - **解决方案**: 使用引号包裹变量设置：
+     ```cmd
+     set "JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}"
+     set "GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}"
+     ```
+
 2. **构建工具链错误**
    ```
    Error: VC++ tools not found

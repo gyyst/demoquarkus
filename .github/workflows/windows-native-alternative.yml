@@ -42,18 +42,28 @@ jobs:
           java -version
           echo "GraalVM Version:"
           native-image --version
-          echo "GraalVM Home: ${{ steps.setup-graalvm.outputs.graalvm-home }}"
-          set JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
-          set GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          echo "GraalVM Home from setup: ${{ steps.setup-graalvm.outputs.graalvm-home }}"
+          set "JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}"
+          set "GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}"
           echo "JAVA_HOME=%JAVA_HOME%"
           echo "GRAALVM_HOME=%GRAALVM_HOME%"
+          echo "Verifying with full paths:"
+          "%JAVA_HOME%\bin\java" -version
+          "%GRAALVM_HOME%\bin\native-image" --version
+        env:
+          JAVA_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
+          GRAALVM_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
 
       - name: Build with Maven (compile)
         shell: cmd
         run: |
-          set JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
-          set GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
-          ./mvnw.cmd clean compile
+          echo "Setting up compilation environment..."
+          set "JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}"
+          set "GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}"
+          set "PATH=${{ steps.setup-graalvm.outputs.graalvm-home }}\bin;%PATH%"
+          echo "JAVA_HOME=%JAVA_HOME%"
+          echo "Starting clean compile..."
+          .\mvnw.cmd clean compile
         env:
           JAVA_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
           GRAALVM_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
@@ -62,11 +72,16 @@ jobs:
       - name: Build Windows native image (Method 1)
         shell: cmd
         run: |
-          set JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
-          set GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
-          set QUARKUS_NATIVE_CONTAINER_BUILD=false
-          set QUARKUS_NATIVE_BUILDER_IMAGE=
-          ./mvnw.cmd package -Pnative -DskipTests
+          echo "Method 1: Setting environment variables..."
+          set "JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}"
+          set "GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}"
+          set "QUARKUS_NATIVE_CONTAINER_BUILD=false"
+          set "QUARKUS_NATIVE_BUILDER_IMAGE="
+          set "PATH=%GRAALVM_HOME%\bin;%PATH%"
+          echo "JAVA_HOME=%JAVA_HOME%"
+          echo "GRAALVM_HOME=%GRAALVM_HOME%"
+          echo "Starting native build..."
+          .\mvnw.cmd package -Pnative -DskipTests
         env:
           GRAALVM_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
           JAVA_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
@@ -95,10 +110,18 @@ jobs:
         if: steps.method1.outcome == 'failure' && steps.method2.outcome == 'failure'
         shell: cmd
         run: |
+          echo "Method 3: Initializing MSVC and setting environment..."
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          set GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
-          set JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
-          ./mvnw.cmd package -Pnative -DskipTests -Dquarkus.native.additional-build-args="--verbose" -Dquarkus.native.native-image-xmx=4g
+          set "GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}"
+          set "JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}"
+          set "PATH=%GRAALVM_HOME%\bin;%PATH%"
+          echo "GRAALVM_HOME=%GRAALVM_HOME%"
+          echo "JAVA_HOME=%JAVA_HOME%"
+          echo "Starting native build with MSVC..."
+          .\mvnw.cmd package -Pnative -DskipTests -Dquarkus.native.additional-build-args="--verbose" -Dquarkus.native.native-image-xmx=4g
+        env:
+          GRAALVM_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
+          JAVA_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
 
       - name: Check build artifacts
         run: |
