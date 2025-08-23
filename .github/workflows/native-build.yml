@@ -114,7 +114,7 @@ jobs:
         run: ./mvnw.cmd clean compile
 
       - name: Build Windows native image
-        run: ./mvnw.cmd package -Pnative -DskipTests
+        run: ./mvnw.cmd package -Pnative -DskipTests -Dquarkus.native.container-build=false
 
       - name: Upload Windows native binary to Release
         uses: softprops/action-gh-release@v1
