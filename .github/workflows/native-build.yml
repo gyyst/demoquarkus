@@ -114,17 +114,40 @@ jobs:
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
 
+      - name: Verify Java and GraalVM installation
+        shell: cmd
+        run: |
+          echo "GraalVM Home: ${{ steps.setup-graalvm.outputs.graalvm-home }}"
+          set JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          set GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          echo "JAVA_HOME=%JAVA_HOME%"
+          echo "GRAALVM_HOME=%GRAALVM_HOME%"
+          java -version
+          native-image --version
+
       - name: Build with Maven (compile)
-        run: ./mvnw.cmd clean compile
+        shell: cmd
+        run: |
+          set JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          set GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          ./mvnw.cmd clean compile
+        env:
+          JAVA_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
+          GRAALVM_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
 
       - name: Build Windows native image with MSVC
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          ./mvnw.cmd package -Pnative -DskipTests -Dquarkus.native.additional-build-args=--verbose
+          set JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          set GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          set PATH=${{ steps.setup-graalvm.outputs.graalvm-home }}\bin;%PATH%
+          echo "Using JAVA_HOME: %JAVA_HOME%"
+          echo "Using GRAALVM_HOME: %GRAALVM_HOME%"
+          ./mvnw.cmd package -Pnative -DskipTests -Dquarkus.native.additional-build-args="--verbose,--no-fallback"
         env:
-          GRAALVM_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
           JAVA_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
+          GRAALVM_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
 
       - name: Upload Windows native binary to Release
         uses: softprops/action-gh-release@v1

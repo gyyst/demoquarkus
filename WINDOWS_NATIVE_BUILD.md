@@ -78,19 +78,29 @@ graph TB
 
 ### 常见问题
 
-1. **构建工具链错误**
+1. **JAVA_HOME 环境变量错误**
+   ```
+   Error: JAVA_HOME not found in your environment.
+   ```
+   - **原因**: Windows 环境中环境变量设置方式不同
+   - **解决方案**: 配置中已包含多层环境变量设置：
+     - 在 GitHub Actions 步骤级别设置 `env`
+     - 在批处理脚本中使用 `set` 命令
+     - 添加路径到 `PATH` 环境变量
+
+2. **构建工具链错误**
    ```
    Error: VC++ tools not found
    ```
    - 解决方案：配置中已包含 `microsoft/setup-msbuild@v2`
 
-2. **GraalVM 路径问题**
+3. **GraalVM 路径问题**
    ```
    Error: Could not find native-image
    ```
    - 解决方案：使用 `graalvm/setup-graalvm` 的输出设置环境变量
 
-3. **内存不足**
+4. **内存不足**
    ```
    Error: java.lang.OutOfMemoryError
    ```
@@ -104,6 +114,45 @@ graph TB
    ```cmd
    demoquarkus-1.0-SNAPSHOT-runner.exe --help
    ```
+
+### 调试技巧
+
+#### 启用详细日志
+```yaml
+- name: Build with verbose logging
+  run: |
+    ./mvnw.cmd package -Pnative -DskipTests \
+      -Dquarkus.native.additional-build-args="--verbose,--no-fallback" \
+      -Dquarkus.log.level=DEBUG
+```
+
+#### 验证环境配置
+```yaml
+- name: Debug environment
+  shell: cmd
+  run: |
+    echo "Java Version:"
+    java -version
+    echo "GraalVM Version:"
+    native-image --version
+    echo "Environment Variables:"
+    set | findstr GRAALVM
+    set | findstr JAVA
+    echo "JAVA_HOME=%JAVA_HOME%"
+    echo "GRAALVM_HOME=%GRAALVM_HOME%"
+    echo "PATH=%PATH%"
+```
+
+#### 检查构建工具
+```yaml
+- name: Check build tools
+  run: |
+    where cl.exe
+    where link.exe
+    echo "MSVC Environment:"
+    set | findstr "INCLUDE\|LIB\|LIBPATH"
+  shell: cmd
+```
 
 ## 技术细节
 

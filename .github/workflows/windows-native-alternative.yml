@@ -36,20 +36,37 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Verify environment
+        shell: cmd
         run: |
           echo "Java Version:"
           java -version
           echo "GraalVM Version:"
           native-image --version
           echo "GraalVM Home: ${{ steps.setup-graalvm.outputs.graalvm-home }}"
-        shell: powershell
+          set JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          set GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          echo "JAVA_HOME=%JAVA_HOME%"
+          echo "GRAALVM_HOME=%GRAALVM_HOME%"
 
       - name: Build with Maven (compile)
-        run: ./mvnw.cmd clean compile
+        shell: cmd
+        run: |
+          set JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          set GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          ./mvnw.cmd clean compile
+        env:
+          JAVA_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
+          GRAALVM_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
 
       # 方案 1: 使用环境变量强制配置
       - name: Build Windows native image (Method 1)
-        run: ./mvnw.cmd package -Pnative -DskipTests
+        shell: cmd
+        run: |
+          set JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          set GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          set QUARKUS_NATIVE_CONTAINER_BUILD=false
+          set QUARKUS_NATIVE_BUILDER_IMAGE=
+          ./mvnw.cmd package -Pnative -DskipTests
         env:
           GRAALVM_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
           JAVA_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
@@ -65,6 +82,9 @@ jobs:
           $env:GRAALVM_HOME = "${{ steps.setup-graalvm.outputs.graalvm-home }}"
           $env:JAVA_HOME = "${{ steps.setup-graalvm.outputs.graalvm-home }}"
           $env:QUARKUS_NATIVE_CONTAINER_BUILD = "false"
+          $env:PATH = "${{ steps.setup-graalvm.outputs.graalvm-home }}\bin;" + $env:PATH
+          Write-Host "JAVA_HOME: $env:JAVA_HOME"
+          Write-Host "GRAALVM_HOME: $env:GRAALVM_HOME"
           & .\mvnw.cmd package -Pnative -DskipTests -Dquarkus.native.additional-build-args="--verbose,--no-fallback"
         shell: powershell
         continue-on-error: true
