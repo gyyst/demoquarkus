@@ -1,0 +1,5 @@
+quarkus:
+    http:
+        port: 8080
+    native:
+        builder-image: quay.io/quarkus/ubi9-quarkus-mandrel-builder-image:jdk-21
