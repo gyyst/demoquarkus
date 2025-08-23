@@ -11,6 +11,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <compiler-plugin.version>3.14.0</compiler-plugin.version>
+        <easy-query.version>3.0.18</easy-query.version>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -55,6 +56,75 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.quarkiverse.jdbc/quarkus-jdbc-sqlite -->
+        <dependency>
+            <groupId>io.quarkiverse.jdbc</groupId>
+            <artifactId>quarkus-jdbc-sqlite</artifactId>
+            <version>3.0.11</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-config-yaml</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkiverse.mybatis</groupId>
+            <artifactId>quarkus-mybatis</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.38</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mybatis-flex</groupId>
+            <artifactId>mybatis-flex-core</artifactId>
+            <version>1.10.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mybatis-flex</groupId>
+            <artifactId>mybatis-flex-processor</artifactId>
+            <version>1.10.9</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- （可选）MyBatis-Flex 注解模块，支持 @Table 等注解 -->
+        <dependency>
+            <groupId>com.mybatis-flex</groupId>
+            <artifactId>mybatis-flex-annotation</artifactId>
+            <version>1.10.9</version>
+        </dependency>
+
+        <!-- Hibernate ORM specific dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+        <!-- 引入eq核心依赖 -->
+        <dependency>
+            <groupId>com.easy-query</groupId>
+            <artifactId>sql-api-proxy</artifactId>
+            <version>${easy-query.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.easy-query</groupId>
+            <artifactId>sql-sqlite</artifactId>
+            <version>${easy-query.version}</version>
+        </dependency>
+
+        <!-- 引入支持eq的APT依赖 -->
+        <dependency>
+            <groupId>com.easy-query</groupId>
+            <artifactId>sql-processor</artifactId>
+            <version>${easy-query.version}</version>
         </dependency>
     </dependencies>
 

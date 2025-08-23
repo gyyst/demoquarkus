@@ -1,5 +1,8 @@
 package com.gyyst.demo.model;
 
+import com.easy.query.core.annotation.EntityProxy;
+import com.easy.query.core.proxy.ProxyEntityAvailable;
+import com.gyyst.demo.model.proxy.User1Proxy;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
@@ -17,10 +20,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(value = "user")
-public class User {
+@Table("user")
+@EntityProxy
+public class User1 implements ProxyEntityAvailable<User1, User1Proxy> {
     @Id(keyType = KeyType.Auto)
     private Long id;
-    
+
     private String name;
 }

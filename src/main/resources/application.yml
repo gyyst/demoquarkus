@@ -1,5 +1,10 @@
 quarkus:
-    http:
-        port: 8080
-    native:
-        builder-image: quay.io/quarkus/ubi9-quarkus-mandrel-builder-image:jdk-21
+  http:
+    port: 8080
+  native:
+    builder-image: quay.io/quarkus/ubi9-quarkus-mandrel-builder-image:jdk-21
+  datasource:
+    db-kind: sqlite
+    jdbc:
+      url: jdbc:sqlite:./mydatabase.db
+      driver: org.sqlite.JDBC
