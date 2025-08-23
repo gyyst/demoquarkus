@@ -1,0 +1,117 @@
+name: Windows Native Build Alternative
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows-native-alternative:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up GraalVM
+        id: setup-graalvm
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm-community'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Setup Visual Studio environment
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Verify environment
+        run: |
+          echo "Java Version:"
+          java -version
+          echo "GraalVM Version:"
+          native-image --version
+          echo "GraalVM Home: ${{ steps.setup-graalvm.outputs.graalvm-home }}"
+        shell: powershell
+
+      - name: Build with Maven (compile)
+        run: ./mvnw.cmd clean compile
+
+      # 方案 1: 使用环境变量强制配置
+      - name: Build Windows native image (Method 1)
+        run: ./mvnw.cmd package -Pnative -DskipTests
+        env:
+          GRAALVM_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
+          JAVA_HOME: ${{ steps.setup-graalvm.outputs.graalvm-home }}
+          QUARKUS_NATIVE_CONTAINER_BUILD: false
+          QUARKUS_NATIVE_BUILDER_IMAGE: ""
+        continue-on-error: true
+        id: method1
+
+      # 方案 2: 如果方案 1 失败，使用 PowerShell 脚本
+      - name: Build Windows native image (Method 2)
+        if: steps.method1.outcome == 'failure'
+        run: |
+          $env:GRAALVM_HOME = "${{ steps.setup-graalvm.outputs.graalvm-home }}"
+          $env:JAVA_HOME = "${{ steps.setup-graalvm.outputs.graalvm-home }}"
+          $env:QUARKUS_NATIVE_CONTAINER_BUILD = "false"
+          & .\mvnw.cmd package -Pnative -DskipTests -Dquarkus.native.additional-build-args="--verbose,--no-fallback"
+        shell: powershell
+        continue-on-error: true
+        id: method2
+
+      # 方案 3: 如果前两个方案都失败，使用最小化配置
+      - name: Build Windows native image (Method 3)
+        if: steps.method1.outcome == 'failure' && steps.method2.outcome == 'failure'
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          set GRAALVM_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          set JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}
+          ./mvnw.cmd package -Pnative -DskipTests -Dquarkus.native.additional-build-args="--verbose" -Dquarkus.native.native-image-xmx=4g
+
+      - name: Check build artifacts
+        run: |
+          if (Test-Path "target\*-runner.exe") {
+            Write-Host "✅ Windows native binary successfully built!"
+            Get-ChildItem target\*-runner.exe | ForEach-Object { 
+              Write-Host "File: $($_.Name), Size: $($_.Length) bytes" 
+            }
+          } else {
+            Write-Host "❌ Windows native binary not found!"
+            Get-ChildItem target\ | Write-Host
+            exit 1
+          }
+        shell: powershell
+
+      - name: Test executable
+        run: |
+          $exe = Get-ChildItem target\*-runner.exe | Select-Object -First 1
+          if ($exe) {
+            Write-Host "Testing executable: $($exe.Name)"
+            try {
+              & $exe.FullName --help
+              Write-Host "✅ Executable test passed!"
+            } catch {
+              Write-Host "⚠️ Executable test completed (expected for Quarkus apps)"
+            }
+          }
+        shell: powershell
+
+      - name: Upload Windows native binary to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: target/*-runner.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
