@@ -68,9 +68,6 @@ jobs:
       - name: Build with Maven (compile)
         run: ./mvnw clean compile
 
-      - name: ldd version
-        run: ldd --version
-
       - name: Build native image
         run: ./mvnw package -Pnative -DskipTests -Dquarkus.native.container-build=true
 
@@ -101,10 +98,10 @@ jobs:
           distribution: 'graalvm-community'
           github-token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Debug GraalVM Home
-        shell: pwsh
-        run: |
-          Write-Host "GraalVM Home: ${{ steps.setup-graalvm.outputs.graalvm-home }}"
+      # - name: Debug GraalVM Home
+      #   shell: pwsh
+      #   run: |
+      #     Write-Host "GraalVM Home: ${{ steps.setup-graalvm.outputs.graalvm-home }}"
       
       - name: Cache Maven dependencies
         uses: actions/cache@v4
