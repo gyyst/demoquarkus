@@ -128,10 +128,10 @@ jobs:
           # echo "Adding Java to PATH"
           # set "PATH=%JAVA_HOME%\bin;%PATH%"
           
-          echo "Initializing MSVC environment"
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          # echo "Initializing MSVC environment"
+          # call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           
-          echo "Building native image"
+          # echo "Building native image"
           .\mvnw.cmd package -Pnative -DskipTests -Dquarkus.native.container-build=false -Dquarkus.native.additional-build-args=--verbose
       
       - name: Upload Windows native binary to Release
