@@ -90,7 +90,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-windows-native:
-    needs: create-tag-and-release
     runs-on: windows-latest
     
     steps:
@@ -124,8 +123,8 @@ jobs:
       
       - name: Upload Windows native binary to Release
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: target/*-runner.exe
-          tag_name: ${{ needs.create-tag-and-release.outputs.new_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
