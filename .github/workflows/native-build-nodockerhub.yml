@@ -108,30 +108,9 @@ jobs:
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
       
-      - name: Set JAVA_HOME and build Windows native image
+      - name: build Windows native image
         shell: cmd
         run: |
-          # echo "Setting JAVA_HOME"
-          # if not "%JAVA_HOME%" == "" (
-          #   echo "JAVA_HOME already set to %JAVA_HOME%"
-          # ) else (
-          #   set "JAVA_HOME=${{ steps.setup-graalvm.outputs.graalvm-home }}"
-          #   if "%JAVA_HOME%" == "" (
-          #     echo "GraalVM output is empty, setting default path"
-          #     set "JAVA_HOME=C:\hostedtoolcache\windows\GraalVM\21\x64"
-          #   )
-          # )
-          # set "GRAALVM_HOME=%JAVA_HOME%"
-          # echo "JAVA_HOME=%JAVA_HOME%"
-          # echo "GRAALVM_HOME=%GRAALVM_HOME%"
-          
-          # echo "Adding Java to PATH"
-          # set "PATH=%JAVA_HOME%\bin;%PATH%"
-          
-          # echo "Initializing MSVC environment"
-          # call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          
-          # echo "Building native image"
           .\mvnw.cmd package -Pnative -DskipTests -Dquarkus.native.container-build=false -Dquarkus.native.additional-build-args=--verbose
       
       - name: Upload Windows native binary to Release
